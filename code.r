@@ -13,20 +13,20 @@ my_similarity_users <- function(rat_mat_1, rat_mat_2) {
     sim <- matrix(nrow = n, ncol = m)
 
     for (i in 1:n) {
-        ui <- as(rat_mat_1[i], "sparseMatrix")
+        ui <- as(as(rat_mat_1[i], "matrix"), "vector")
         ui_fltr <- !is.na(ui)
-        
+
         cat(paste(i, "\n"))
-        
+
         for (j in 1:m) {
-            uj <- as(rat_mat_2[j], "sparseMatrix")
+            uj <- as(as(rat_mat_2[j], "matrix"), "vector")
 
             uj_fltr <- !is.na(uj)
 
             cut_fltr <- ui_fltr & uj_fltr
 
             # d <- (ui[cut_fltr] %*% uj[cut_fltr]) / (sqrt(sum(ui[ui_fltr]**2)) * sqrt(sum(uj[uj_fltr]**2))) # cosine similarity
-            d <- sum(cut_fltr)/(sqrt(sum((ui[cut_fltr] - uj[cut_fltr])**2)) + 1) # euclidean similarity
+            d <- sum(cut_fltr) / (sqrt(sum((ui[cut_fltr] - uj[cut_fltr])**2)) + 1) # euclidean similarity
 
             tryCatch(
                 {
@@ -54,20 +54,20 @@ my_similarity_books <- function(rat_mat_1, rat_mat_2) {
     sim <- matrix(nrow = n, ncol = m)
 
     for (i in 1:n) {
-        bi <- as(as(rat_mat_1[,i], "matrix"), "vector")
+        bi <- as(as(rat_mat_1[, i], "matrix"), "vector")
         bi_fltr <- !is.na(bi)
-        
+
         cat(paste(i, "\n"))
-        
+
         for (j in 1:m) {
-            bj <- as(as(rat_mat_2[,j], "matrix"), "vector")
+            bj <- as(as(rat_mat_2[, j], "matrix"), "vector")
 
             bj_fltr <- !is.na(bj)
 
             cut_fltr <- bi_fltr & bj_fltr
 
             # d <- (ui[cut_fltr] %*% uj[cut_fltr]) / (sqrt(sum(ui[ui_fltr]**2)) * sqrt(sum(uj[uj_fltr]**2))) # cosine similarity
-            d <- sum(cut_fltr)/(sqrt(sum((bi[cut_fltr] - bj[cut_fltr])**2)) + 1) # euclidean similarity
+            d <- sum(cut_fltr) / (sqrt(sum((bi[cut_fltr] - bj[cut_fltr])**2)) + 1) # euclidean similarity
 
             tryCatch(
                 {
@@ -88,12 +88,12 @@ my_similarity_books <- function(rat_mat_1, rat_mat_2) {
     return(sim)
 }
 
-my_similarity <- function(rat_mat_1, rat_mat_2, which = "users"){
-    if (which == "users"){
+my_similarity <- function(rat_mat_1, rat_mat_2, which = "users") {
+    if (which == "users") {
         return(my_similarity_users(rat_mat_1, rat_mat_2))
-    }else if (which == "books") {
-       return(my_similarity_books(rat_mat_1, rat_mat_2)) 
-    }else{
+    } else if (which == "books") {
+        return(my_similarity_books(rat_mat_1, rat_mat_2))
+    } else {
         return(which)
     }
 }
@@ -268,24 +268,24 @@ create_rating_matrix <- function(ratings, min.rating.user = 4, min.rating.book =
     return(real.rating.matrix)
 }
 
-calck_pred_mat_users <- function(given_rrm, sim_mat){
+calck_pred_mat_users <- function(given_rrm, sim_mat) {
     n <- ncol(given_rrm)
     m <- ncol(sim_mat)
     pred <- matrix(nrow = n, ncol = m)
 
-    for (i in 1:n){
-        given <- as(as(given_rrm[, i], "sparseMatrix"))
-        
+    for (i in 1:n) {
+        given <- as(as(given_rrm[, i], "matrix"), "vector")
+
         given_fltr <- !is.na(given)
-        
+
         cat(paste(i, "\n"))
-        for (j in 1:m){
-            sim <- sim_mat[,j] 
+        for (j in 1:m) {
+            sim <- sim_mat[, j]
 
             sim_fltr <- sim != 0
 
             cut_fltr <- sim_fltr & given_fltr
-            
+
             p <- sum(sim[cut_fltr] * given[cut_fltr])
             pred[i, j] <- ifelse(is.na(p), 0, p)
         }
@@ -297,25 +297,25 @@ calck_pred_mat_users <- function(given_rrm, sim_mat){
     return(pred)
 }
 
-calck_pred_mat_books <- function(given_rrm, sim_mat){
+calck_pred_mat_books <- function(given_rrm, sim_mat) {
     n <- nrow(given_rrm)
     m <- ncol(sim_mat)
-    
+
     pred <- matrix(nrow = n, ncol = m)
 
-    for (i in 1:n){
+    for (i in 1:n) {
         given <- as(as(given_rrm[i], "matrix"), "vector")
-        
+
         given_fltr <- !is.na(given)
-        
+
         cat(paste(i, "\n"))
-        for (j in 1:m){
-            sim <- sim_mat[,j] 
+        for (j in 1:m) {
+            sim <- sim_mat[, j]
 
             sim_fltr <- sim != 0
 
             cut_fltr <- sim_fltr & given_fltr
-            
+
             p <- sum(sim[cut_fltr] * given[cut_fltr])
             pred[i, j] <- ifelse(is.na(p), 0, p)
         }
@@ -327,12 +327,12 @@ calck_pred_mat_books <- function(given_rrm, sim_mat){
     return(pred)
 }
 
-calck_pred_mat <- function(given_rrm, sim_mat, which = "users"){
-    if (which == "users"){
+calck_pred_mat <- function(given_rrm, sim_mat, which = "users") {
+    if (which == "users") {
         return(calck_pred_mat_users(given_rrm, sim_mat))
-    }else if (which == "books") {
-       return(calck_pred_mat_books(given_rrm, sim_mat))
-    }else{
+    } else if (which == "books") {
+        return(calck_pred_mat_books(given_rrm, sim_mat))
+    } else {
         return(which)
     }
 }
@@ -426,8 +426,8 @@ predict_books_for_user <- function(given_rrm, new_rrm, k_rec = 10) {
 
     for (i in 1:ncol(sim_mat)) {
         k <- nrow(sim_mat) - 20 # ceiling(0.9 * nrow(sim_mat))
-        sim_mat[head(order(sim_mat[, i]), k), i] <- 0  # filter the smallest 70% of the values
-        
+        sim_mat[head(order(sim_mat[, i]), k), i] <- 0 # filter the smallest 70% of the values
+
         # normalize sim_mat
         w <- 1 / sum(sim_mat[, i])
         if (is.infinite(w) | is.na(w)) {
@@ -437,7 +437,7 @@ predict_books_for_user <- function(given_rrm, new_rrm, k_rec = 10) {
     }
 
     pred_mat <- calck_pred_mat(given_rrm, sim_mat)
-    
+
     new_rrm_mat <- as(new_rrm, "matrix")
     new_rrm_mat <- replace(new_rrm_mat, is.na(new_rrm_mat), 0)
 
@@ -525,7 +525,7 @@ test_books_for_user <- function(rrm, train_ratio = 0.99) {
 }
 
 rrm <- create_rating_matrix(ratings)
-rrm <- rrm[1:1000, ]
+rrm <- rrm[1:10000, ]
 
 given_rrm <- rrm[1:floor(nrow(rrm) * 0.999)]
 
@@ -538,13 +538,12 @@ rm(new_rrm)
 rm(rrm)
 
 predict_users_for_book <- function(given_rrm, new_rrm, k_rec = 10) {
-    
     sim_mat <- my_similarity(given_rrm, new_rrm, which = "books")
 
     for (i in 1:ncol(sim_mat)) {
         k <- nrow(sim_mat) - 10 # ceiling(0.9 * nrow(sim_mat))
-        sim_mat[head(order(sim_mat[, i]), k), i] <- 0  # filter the smallest 70% of the values
-        
+        sim_mat[head(order(sim_mat[, i]), k), i] <- 0 # filter the smallest 70% of the values
+
         # normalize sim_mat
         w <- 1 / sum(sim_mat[, i])
         if (is.infinite(w) | is.na(w)) {
